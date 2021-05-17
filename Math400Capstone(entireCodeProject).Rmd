@@ -1,0 +1,151 @@
+---
+title: "Math 400  Capstone Data Wrangling"
+author: "Emily, Jerri, Nicholas"
+date: "2/15/2021"
+output: pdf_document
+---
+
+RUN MATH 400 CAPSTONE STEPS 1-7, RUN "BEFORE" RMD, THEN "AFTER" RMD, THEN REST OF MATH 400 CAPSTONE RMD! 
+
+```{r}
+# terminology: 
+# rq1.version means the dataset for "research question 1." version 3 is the latest as of 3/9/21
+# order and levels have been used interchangeably, but they mean 1-4 stay at home order levels
+```
+
+
+```{r CHECKLIST}
+# [DONE] Data Integrity check for rq1.version3
+# [] Change covid.mask data to R and D only (emily did this but it didn't save!)
+# [DONE] consider bringing date back to rq1.v3 (efficient way is to work FROM rq1.v2)
+```
+
+
+```{r Resources}
+
+```
+
+
+```{r, Load Data & Packages}
+#install.packages("dplyr")
+#install.packages("car")
+require(dplyr)
+require(tidyverse)
+require(ggplot2)
+require(car)
+require(arm)
+us.states = read.csv("us-states.csv")
+covid.mask.old = read.csv("covid-mask.csv")
+covid.mask.old
+```
+
+
+```{r, Research Question (RQ) 1}
+#step 0: use a function to take out the entire row with states that have N/A or S (3 total)
+
+covid.mask <- covid.mask.old[-c(9, 20, 28),] 
+
+#step 1 : merge cases and mask dataset 
+rq1 = merge(us.states, covid.mask, by = "state")
+head(rq1)
+
+#step 2: changing character to dates for data type
+
+rq1$date <- as.Date(rq1$date, "%Y-%m-%d")
+class(rq1$date)
+
+#step 3
+# subset to only states, month, cumulative cases, political party, order
+
+subset.rq1 = dplyr::select(rq1, -c(fips, deaths, case, death, test, population, land, density))
+head(subset.rq1)
+# https://stackoverflow.com/questions/48754775/select-command-not-working-in-r-even-after-installing-the-library-dplyr
+
+#step 4: make dataset with state order and levels.  
+states2 = c("California","Colorado","Connecticut","Delaware","District of Columbia","Guam","Hawaii","Illinois","Kansas","Kentucky","Louisiana","Maine","Michigan", "Minnesota","Montana","Nevada","New Jersey","New Mexico","New York","North Carolina","Oregon","Pennsylvania","Rhode Island","Virginia","Washington","Wisconsin","Alabama","Alaska","Arizona","Arkansas","Florida","Georgia","Idaho","Indiana","Iowa","Maryland","Massachusetts","Mississippi","Missouri","Nebraska","New Hampshire","North Dakota","Ohio","Oklahoma","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","West Virginia","Wyoming","Puerto Rico","U.S. Virgin Islands")
+levels = c(4,2,4,4,4,NA,4,4,3,3,4,2,4,3,3,2,3,2,4,4,4,2,4,4,3,2,2,2,3,2,3,2,2,3,2,4,4,2,3,3,4,2,2,2,2,1,2,2,2,2,2,2,NA,NA)
+data.levels <- cbind(states2,levels)
+write.csv(data.levels, file = "level.csv")
+state.levels = read.csv("level.csv")
+state.levels.v2 = rename(state.levels, state=states2)
+
+#step 5: combine dataset with levels to subsetted dataset
+rq1.version1 = merge(subset.rq1,state.levels.v2, by = "state") # CASE2 NEEDS TO BE CHECKED
+head(rq1.version1)
+
+# step 6: if date = c(2020-01-21,..., 2020-01-31) then new variable "month" = 01....etc. create month only variable
+temp1 <- as.Date(rq1.version1$date, format = "%Y-%m-%d")
+month1 <- substr(temp1, 6, 7)
+month1
+month <- as.numeric(month1)
+
+rq1.version2 <- cbind(rq1.version1, month) #new column added to rq1.version1 dataset
+rq1.version2
+head(rq1.version2,500)
+tail(rq1.version2, 500)
+
+# step 7: remove unneeded X column (made by merging) from rq1version2. 
+rq1.version3 <- dplyr::select(rq1.version2, -X)
+
+```
+
+```{r, EVERYTHING NEEDED FOR STEP 8 (48 rows)}
+
+# step 8
+
+state = c("Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maryland","Masschusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nevada","New Hampshire","New Jersey","New Mexico", "New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming")
+
+before <- c(alabama.avg, alaska.avg, arizona.avg, arkansas.avg, california.avg, colorado.avg, connecticut.avg, delaware.avg, florida.avg, georgia.avg, hawaii.avg, idaho.avg,illinois.avg, indiana.avg, iowa.avg,kansas.avg, kentucky.avg,louisiana.avg, maryland.avg, massachusetts.avg, michigan.avg, minnesota.avg, mississippi.avg, missouri.avg, montana.avg, nevada.avg, newhampshire.avg, newjersey.avg, newmexico.avg, newyork.avg, northcarolina.avg, northdakota.avg, ohio.avg, oklahoma.avg, oregon.avg, pennsylvania.avg, rhodeisland.avg, southcarolina.avg, southdakota.avg, tennessee.avg, texas.avg, utah.avg, vermont.avg, virginia.avg, washington.avg, westvirginia.avg, wisconsin.avg, wyoming.avg)
+
+
+
+after <- c(a.alabama.avg, a.alaska.avg, a.arizona.avg, a.arkansas.avg, a.california.avg, a.colorado.avg, a.connecticut.avg, a.delaware.avg, a.florida.avg, a.georgia.avg, a.hawaii.avg, a.idaho.avg, a.illinois.avg, a.indiana.avg, a.iowa.avg, a.kansas.avg, a.kentucky.avg, a.louisiana.avg, a.maryland.avg, a.massachusetts.avg, a.michigan.avg, a.minnesota.avg, a.mississippi.avg, a.missouri.avg, a.montana.avg, a.nevada.avg, a.newhampshire.avg, a.newjersey.avg, a.newmexico.avg, a.newyork.avg, a.northcarolina.avg,
+a.northdakota.avg, a.ohio.avg, a.oklahoma.avg, a.oregon.avg, a.pennsylvania.avg, a.rhodeisland.avg, a.southcarolina.avg, a.southdakota.avg, a.tennessee.avg, a.texas.avg, a.utah.avg, a.vermont.avg, a.virginia.avg, a.washington.avg, a.westvirginia.avg, a.wisconsin.avg, a.wyoming.avg) 
+
+
+
+before <- round(before, 2) #merge all
+after <- round(after, 2)
+party <- c("R","R","R","R","D","D","D","D","R","R","D","R","D","R","R","D","D","D","R","R","D","D","R","R","D",
+           "D","R","D","D","D","D","R","R","R","D","D","D","R","R","R","R","R","R","D","D","R","D","R")
+order <- c(2,2,3,2,4,2,4,4,3,2,4,2,4,3,2,3,3,4,4,4,4,3,2,3,3,2,4,3,2,4,4,2,2,2,4,2,4,2,1,2,2,2,2,4,3,2,2,2)
+mask <- c("Y","N","N","Y","Y","Y","Y","Y","N","N","Y","N","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","N","N","Y",
+          "Y","Y","Y","Y","Y","Y","Y","Y","N","Y","Y","Y","N","N","N","Y","Y","Y","Y","Y","Y","Y","Y")
+
+rq1.version4 <- data.frame(state, before, after, party, order, mask)
+rq1.version4
+```
+
+```{r THIS STEP IS NOT NEEDED ANYMORE, BUT SAVE JUST IN CASE}
+
+# step 9: 
+
+# we must start from rq1.version3. our dataset for research question 1 is missing a column (using ALL weeks up to 02-09-2021) for EITHER total cumulative cases for ALL states OR the average weekly increase percentage for ALL states. what answers the research question 1? likely total cumulative cases for all weeks up to 02-09-2021). we don't need to stop at 08-29-20 because this question has nothing to do with before and after comparisons. just comparing the cumulative cases for each order level. 
+
+# subset the rq1.version3 dataset to just 02-09-2021. then merge it to rq1.version4 to make a new dataset that has total cumulative cases per state in it. it's confusing because we will have "before" and "after" in averages only up to 08-29-2020 but the "c.cases" will just be a total count of all cumulative cases on the last day, 02-09-2021.
+
+TotalCasesAllStates = subset(rq1.version3, date == "2021-02-09")
+TotalCasesAllStates
+
+tempDataset = dplyr::select(TotalCasesAllStates, -c(date,case2,mask,party,levels,month))
+tempDataset # keep state and cases columns 
+
+rq1.version5 = merge(rq1.version4, tempDataset, by = "state") #merging tempDataset to rq1.version4 by state 
+rq1.version5 # where "cases" are total cumulative cases. from rq1.v4 to rq1.v5, somehow massachusetts is missing. 
+```
+
+```{r}
+# step 10:
+rq2 = rq1.version4 # we were making the dataset to answer research question 1 and 2. rq1.version4 can answer research question 2. might as well name it rq2. 
+
+
+# step 11: 
+
+
+
+# step x-1: need cases % increase shortly after mask mandate (see meeting note). remember mask mandate on covid.mask dataset happened on 1/15/21 according to covid.mask.txt in google drive folder. 
+
+
+# step x: data integrity check!! make sure dataset in csv and our latest dataset have the same numbers!
+```
+
